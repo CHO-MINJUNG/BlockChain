@@ -6,11 +6,12 @@ import datetime
 import hashlib
 # block hash 전에 인코딩을 위해 json의 dumps함수 사용
 import json
+from urllib import response
 # jsonify를 사용해 postman과 상호작용 때 msg를 주고 받음
 from flask import Flask, jsonify
 # 1. block chain architecture 설계 [building a blockchain]
 
-class Blockchains:
+class Blockchain:
     def __init__(self):
         self.chain = []
         # prev_hash가 0인 이유는 해당 block이 genesis이기 때문에
@@ -60,4 +61,25 @@ class Blockchains:
         return True
 # 2. block chain state 표시 함수(postman) + new block mining 함수
 
+# Creating a Web App
+app = Flask(__name__)
 
+# Creating a Blockchain
+blockchain = Blockchain()
+
+# Mining a new Block
+@app.route('/mine_block', methods = ['GET'])
+def mine_block():
+    previous_block = blockchain.get_previous_block()
+    previous_proof = previous_block('proof')
+    proof = blockchain.proof_of_work(previous_proof)
+    previous_hash = blockchain.hash(previous_block)
+    block = blockchain.create_block(proof, previous_hash)
+    response = {
+        'message' : 'Congratulation, you just mined a block',
+        'index' : block['index'],
+        'timestamp': block['timestamp'],
+        'proof': block['proof'],
+        'previous_hash': block['previous_hash']
+    }
+    return jsonify(response), 200
